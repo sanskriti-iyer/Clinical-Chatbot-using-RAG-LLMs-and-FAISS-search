@@ -1,0 +1,14 @@
+%pip install langchain --quiet
+%pip install -U langchain-community --quiet
+%pip install langchain-core --quiet
+%pip install sentence-transformers --quiet
+%pip install transformers torch --quiet
+%pip install -U langchain langchain-community langchain-core --quiet
+%pip install pypdf --quiet
+%pip install -U langchain-text-splitters --quiet
+%pip install -U langchain-huggingface --quiet
+%pip install chromadb --quiet
+%pip install -U langchain-huggingface --quiet
+%pip install langchain-groq --quiet
+%pip install ragas==0.1.21 --quiet
+%pip install evaluate bert-score rouge-score --quiet

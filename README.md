@@ -1,34 +1,59 @@
-# Clinical QA RAG System
+# Clinical Guidelines RAG Chatbot
 
-Retrieval-Augmented Generation (RAG) system designed to answer clinical guideline questions with high semantic accuracy. By combining the retrieval power of FAISS with the generative capabilities of OpenAI, the system provides precise, context-aware answers based on clinical datasets.
+A Retrieval-Augmented Generation (RAG) chatbot built to answer clinical questions based on the VA/DoD Clinical Practice Guidelines for Opioid Therapy for Chronic Pain.
 
-_**Project Overview**_
+## Overview
 
-The system processes clinical data by combining titles and contexts into retrievable knowledge units. It uses a vector-based approach to find relevant information and generate answers that are both deterministic and traceable.
+This project implements a RAG pipeline that retrieves relevant chunks from a clinical guidelines PDF and generates accurate, context-grounded answers to user queries. The system cites page numbers from the source document in its responses.
 
-**Key Features:**
+## Data Source
 
-- Vector Search: Utilizes FAISS for fast, in-memory similarity searches.
-- Semantic Embeddings: Leverages OpenAI text-embedding-ada-002 for high-quality vector representations.
-- Interactive Querying: Includes a built-in loop for real-time user questions and answers.
-- Advanced Evaluation: Measures performance using BERTScore to ensure semantic similarity between generated answers and ground truth.
-- Traceability: Configured to return source documents, allowing users to verify the clinical context used for each answer
+VA/DoD Clinical Practice Guideline for Opioid Therapy for Chronic Pain
+https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/Pain/cot/VADODOpioidsCPG.pdf
 
-**System Architecture:**
+## Tech Stack
 
-- Input: The user submits a clinical question.
-- Embedding: The question is converted into a vector using an OpenAI embedding model.
-- Retrieval: FAISS identifies and retrieves the most similar data chunks.
-- Generation: ChatGPT (gpt-3.5-turbo) generates a final answer using the retrieved context.
-- Output: The system delivers a semantically accurate clinical response.
+- **LLM**: Llama 3.3 70B via Groq API
+- **Embeddings**: all-MiniLM-L6-v2 (sentence-transformers)
+- **Vector Store**: Chroma
+- **Framework**: LangChain
+- **PDF Loader**: PyPDFLoader
+- **Evaluation**: BERTScore, ROUGE
 
-Performance: The system achieves a BERTScore F1 of >92%, demonstrating strong alignment with professional clinical ground truth answers.
+## Pipeline
 
-**Tech Stack:**
-- Framework: LangChain, used to orchestrate the retrieval and generation pipeline.
-- Language Model: OpenAI ChatGPT (gpt-3.5-turbo) for generating human-like clinical answers.
-- Embeddings: OpenAI text-embedding-ada-002 to create semantic vector representations of text.
-- Vector Store: FAISS (Facebook AI Similarity Search) for efficient, in-memory similarity searching
-- Evaluation Metric: BERTScore to measure the semantic accuracy and F1 similarity between predicted and ground truth answers.
-- Data Handling: Pandas for processing clinical datasets containing titles, contexts, questions, and answers.
-- Environment: Google Colab for development and execution.
+1. Load and chunk the VA/DoD opioid guidelines PDF using PyPDFLoader and RecursiveCharacterTextSplitter
+2. Embed chunks using all-MiniLM-L6-v2 and store in Chroma vector store
+3. Retrieve top 3 relevant chunks for each user query
+4. Generate answers using Llama 3.3 70B with source page citations
+5. Evaluate generated answers against ground truth using BERTScore and ROUGE
+
+## Evaluation Results
+
+| Metric | Score |
+|--------|-------|
+| BERTScore Precision | 0.81 |
+| BERTScore Recall | 0.83 |
+| BERTScore F1 | 0.82 |
+| ROUGE-1 | 0.06 |
+| ROUGE-L | 0.04 |
+
+ROUGE scores are low due to paraphrasing rather than incorrect answers. BERTScore is the more meaningful metric here as it measures semantic similarity.
+
+## Setup
+
+1. Clone the repository
+2. Create a conda environment with Python 3.10
+3. Install dependencies: `pip install -r requirements.txt`
+4. Add your Groq API key to a `.env` file: `GROQ_API_KEY=your_key_here`
+5. Run the notebook
+
+## Dataset
+
+Evaluation was performed using the cpgQA-v1.0 dataset, which contains question-answer pairs derived from the same VA/DoD opioid clinical practice guidelines PDF used as the knowledge base.
+
+## Limitations
+
+- Runs on CPU only, no GPU required
+- Groq free tier rate limits may slow down batch evaluation
+- flan-t5 was tested but replaced with Llama 3.3 70B via Groq for better instruction following
